@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // resize the stage
     function resizeStage(wrapper, stage, aspectRatio) {
+        //const wrapperWidth = wrapper.clientWidth - 40; // Subtracting margin
+        //const wrapperHeight = wrapper.clientHeight - 40; // Subtracting margin
         const wrapperWidth = wrapper.clientWidth - 40; // Subtracting margin
         const wrapperHeight = wrapper.clientHeight - 40; // Subtracting margin
 
@@ -75,17 +77,38 @@ const minHeight = 72;
 const maxWidth = 1200;
 const maxHeight = 144;
 
-const image_original_width = 8189;
-const image_original_height = 737;
-
 let current_input_user_inch_width = 96;
 let current_input_user_inch_height = 72;
+
+    /*
+    // match width and heith of reference to compare
+const minWidth = 1;
+const maxWidth = 65;
+const minHeight = 1;
+const maxHeight = 65;
+
+let current_input_user_inch_width = 30;
+let current_input_user_inch_height = 20;
+*/
+
+widthInputElement.value = current_input_user_inch_width;
+widthInputElement.min = minWidth;
+widthInputElement.max = maxWidth;
+heightInputElement.value = current_input_user_inch_height;
+heightInputElement.min = minHeight;
+heightInputElement.max = maxHeight;
+
+
 
 const initialStageWidth = 960; // Initial stage width
 const initialStageHeight = 720; // Initial stage height
 
+/*
 let current_input_user_inch_height_scale = initialStageHeight/image_original_height;
 let current_input_user_inch_width_scale = current_input_user_inch_height_scale;
+*/
+let current_input_user_inch_height_scale = 1;
+let current_input_user_inch_width_scale = 1;
 
 const wrapper = document.querySelector('.walltool-canvas-wrapper');
 let wrapper_width = wrapper.clientWidth;
@@ -115,12 +138,10 @@ if (wallpaperImageUrl) {
     Konva.Image.fromURL(wallpaperImageUrl, function (image) {
         // Initial image setup
 
-        stage.scaleX(current_input_user_inch_width_scale);
-        stage.scaleY(current_input_user_inch_height_scale);
-
+           // x: (stage.width() - image.width()) / 2,
         // Get the width and height of the element
         image.setAttrs({
-            x: (stage.width() - image.width()) / 2,
+            x: 0,
             y: 0,
             draggable: true,
             scaleX: 1,
@@ -131,6 +152,14 @@ if (wallpaperImageUrl) {
 
         stage.scaleX(current_input_user_inch_width_scale);
         stage.scaleY(current_input_user_inch_height_scale);
+
+        console.log('initial scale' + current_input_user_inch_width_scale);
+        new_x = (stage.width() - (image.width()*current_input_user_inch_width_scale)) / 2;
+        //console.log('new x is ' + new_x)
+        // new algorithm moves and scales the stage and keeps the image at x=0 y=0 and keeps the scale the same
+        stage.x(new_x);
+        //image.y(0);
+
         layer.add(image);
         layer.draw();
         const width = image.width();
@@ -146,6 +175,8 @@ if (wallpaperImageUrl) {
         console.log('ScaleY:', scaleY);
 
         // Add dragging constraints
+        // not sure how this works or how its still working with new code
+        // chatgpt gives me alternate code for panning
         image.on('dragmove', function () {
             const pos = image.position();
             const imgWidth = image.width() * image.scaleX();
@@ -159,93 +190,44 @@ if (wallpaperImageUrl) {
             }
 
             // Keep the y position constant
-            image.y(stage.height() / 2);
+            image.y(0);
         });
 
         // Function to adjust canvas size based on inputs
         function adjustCanvasSize() {
-            const widthInput = parseFloat(widthInputElement.value) || 96;
-            const heightInput = parseFloat(heightInputElement.value) || 72;
+            // new algorithm moves and scales the stage and keeps the image at x=0 y=0 and keeps the scale the same
+            const widthInput = parseFloat(widthInputElement.value) || minWidth;
+            const heightInput = parseFloat(heightInputElement.value) || minHeight;
             current_input_user_inch_width = widthInput;
             current_input_user_inch_height = heightInput;
-            current_input_user_inch_width_scale = current_input_user_inch_width/image_original_width;
-            current_input_user_inch_height_scale = current_input_user_inch_height/image_original_height;
 
             // Validate input values
             if (widthInput < minWidth || widthInput > maxWidth || heightInput < minHeight || heightInput > maxHeight) {
                 console.log(`Input values out of range: Width: ${widthInput}, Height: ${heightInput}`);
                 return;
             }
+            console.log('image height is ' + image.height())
+            console.log('image width is ' + image.width())
 
-            let newWidthPixels = widthInput * 10;
-            let newHeightPixels = heightInput * 10;
+            image.x(0)
+            image.y(0)
 
-            console.log(`Width Input: ${widthInput}, Height Input: ${heightInput}`);
-            console.log(`New Width Pixels: ${newWidthPixels}, New Height Pixels: ${newHeightPixels}`);
-            console.log(`Stage width before adjustment: ${stage.width()}, Stage height before adjustment: ${stage.height()}`);
+            user_input_aspect_ratio = widthInput/heightInput;
+            resizeStage(wrapper, stage, user_input_aspect_ratio);
 
-            // Adjust the scale factor and height based on the width input
-            if (widthInput > 130) {
-                const scaleFactor = 130 / widthInput; // Calculate scaling factor based on the threshold
-                newHeightPixels = initialStageHeight * scaleFactor; // Adjust height based on the scaling factor
-                image.scaleX(scaleFactor);
-                image.scaleY(scaleFactor);
-                stage.height(newHeightPixels);
-            }
+            current_input_user_inch_height_scale = stage.height()/image.height();
+            current_input_user_inch_width_scale = current_input_user_inch_height_scale;
 
-            const currentscaledheight2 = 720 * image.scaleY();
-            if (currentscaledheight2 >= 730) {
-                const scaleFactorY = heightInput / 100; // Calculate scaling factor based on the threshold
-                image.y((stage.height() - newHeightPixels) / 2);
-            } else if (heightInput <= widthInput) {
-                const scaleFactor = 100 / heightInput; // Calculate scaling factor based on the threshold
-                newWidthPixels = initialStageWidth * scaleFactor; // Adjust height based on the scaling factor
-                stage.width(newWidthPixels);
-            }
 
-            if (heightInput > widthInput) {
-                const scaleFactor = 100 / heightInput; // Calculate scaling factor based on the threshold
-                newWidthPixels = initialStageWidth * scaleFactor; // Adjust height based on the scaling factor
-            }
+            stage.scaleX(current_input_user_inch_width_scale);
+            stage.scaleY(current_input_user_inch_height_scale);
 
-            // Max size
-            const contentleftdiv = document.querySelector('.content-left');
-            const widthleft = contentleftdiv.offsetWidth - 100;
-            newHeightPixels = Math.min(newHeightPixels, window.innerHeight);
 
-            // Adjust both the stage width and height
-            stage.width(newWidthPixels);
-            stage.height(newHeightPixels);
-
-            // Scale the image to match the new width, maintaining aspect ratio
-            const scaleFactor = newWidthPixels / 8189;
-            const scaleFactorY = newHeightPixels / 737;
-
-            const currentscaledwidth = 8189 * image.scaleX();
-            const currentscaledheight = 737 * image.scaleY();
-
-            if (currentscaledwidth < newWidthPixels) {
-                image.scaleX(scaleFactor);
-                image.scaleY(scaleFactor);
-
-                // Update canvas (stage) dimensions based on the new image size
-                newHeightPixels = 737 * scaleFactor;
-                stage.width(newWidthPixels);
-                stage.height(newHeightPixels);
-
-                // Center the image vertically within the stage
-                const centeredY = (stage.height() - image.height() * image.scaleY()) / 2;
-                image.y(centeredY);
-
-                // Center the image horizontally within the stage
-                image.x(stage.width() / 2);
-            }
-
-            image.x(stage.width() / 2);
-            image.y(stage.height() / 2);
-
-            console.log(`Image position after adjustment: x=${image.x()}, y=${image.y()}`);
-            console.log(`Image scale after adjustment: scaleX=${image.scaleX()}, scaleY=${image.scaleY()}`);
+            let new_x = (stage.width() - (image.width()*current_input_user_inch_width_scale)) / 2;
+            console.log('new x is ' + new_x)
+            stage.x(new_x);
+            console.log('user input aspect ratio is: ' + user_input_aspect_ratio)
+            console.log('the scale is ' +current_input_user_inch_width_scale )
 
             layer.draw();
         }
@@ -258,6 +240,27 @@ if (wallpaperImageUrl) {
         heightInputElement.addEventListener('input', function () {
             console.log('Height input changed:', heightInputElement.value);
             adjustCanvasSize();
+        });
+
+        window.addEventListener('resize', () => {
+            // new algorithm moves and scales the stage and keeps the image at x=0 y=0 and keeps the scale the same
+            const widthInput = parseFloat(widthInputElement.value) || minWidth;
+            const heightInput = parseFloat(heightInputElement.value) || minHeight;
+            user_input_aspect_ratio = widthInput/heightInput;
+
+            resizeStage(wrapper, stage, user_input_aspect_ratio);
+            current_input_user_inch_height_scale = stage.height()/image.height();
+            current_input_user_inch_width_scale = current_input_user_inch_height_scale;
+            // center the image
+
+            stage.scaleX(current_input_user_inch_width_scale);
+            stage.scaleY(current_input_user_inch_height_scale);
+
+            new_x = (stage.width() - (image.width()*current_input_user_inch_width_scale)) / 2;
+            //console.log('new x is ' + new_x)
+            stage.x(new_x);
+
+            layer.draw();
         });
     });
 } else {
@@ -314,16 +317,16 @@ if (wallpaperImageUrl) {
         let height = parseFloat(heightInput.value);
         let width = parseFloat(widthInput.value);
 
-        if (isNaN(height) || height < 72) {
-            height = 72;
-        } else if (height > 144) {
-            height = 144;
+        if (isNaN(height) || height < minHeight) {
+            height = minHeight;
+        } else if (height > maxHeight) {
+            height = maxHeight;
         }
 
-        if (isNaN(width) || width < 96) {
-            width = 96;
-        } else if (width > 1200) {
-            width = 1200;
+        if (isNaN(width) || width < minWidth) {
+            width = minWidth;
+        } else if (width > maxWidth) {
+            width = maxWidth;
         }
 
         heightInput.value = height;
