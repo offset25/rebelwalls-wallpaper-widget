@@ -37,22 +37,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
+    // resize the stage
+    function resizeStage(wrapper, stage, aspectRatio) {
+        const wrapperWidth = wrapper.clientWidth - 40; // Subtracting margin
+        const wrapperHeight = wrapper.clientHeight - 40; // Subtracting margin
+
+        let stageWidth = wrapperWidth;
+        let stageHeight = stageWidth / aspectRatio;
+
+        if (stageHeight > wrapperHeight) {
+            stageHeight = wrapperHeight;
+            stageWidth = stageHeight * aspectRatio;
+        }
+        console.log('wrapper')
+        console.log(wrapperWidth)
+        console.log(wrapperHeight)
+
+        console.log('the stage width and height')
+        console.log(stageWidth)
+        console.log(stageHeight)
+
+        stage.width(stageWidth);
+        stage.height(stageHeight);
+
+        stage.batchDraw();
+    }
+
+    //const wallpaperImageUrl = getParameterByName('wallpaper_image');
     const wallpaperImageUrl = "./Arboretum-full-1200-108.jpg";
     const widthInputElement = document.getElementById('width');
     const heightInputElement = document.getElementById('height');
 
 
-    // Define minimum and maximum allowed values
+    // Define minimum and maximum allowed values in inches
 const minWidth = 96;
 const minHeight = 72;
 const maxWidth = 1200;
 const maxHeight = 144;
 
+const image_original_width = 8189;
+const image_original_height = 737;
+
+let current_input_user_inch_width = 96;
+let current_input_user_inch_height = 72;
+
+const initialStageWidth = 960; // Initial stage width
+const initialStageHeight = 720; // Initial stage height
+
+let current_input_user_inch_height_scale = initialStageHeight/image_original_height;
+let current_input_user_inch_width_scale = current_input_user_inch_height_scale;
+
+const wrapper = document.querySelector('.walltool-canvas-wrapper');
+let wrapper_width = wrapper.clientWidth;
+let wrapper_height = wrapper.clientHeight;
+
+let user_input_aspect_ratio = current_input_user_inch_width/current_input_user_inch_height;
+
+// viewport/stage pixels per inch
+let current_user_input_pixels_per_inch_width_scale = initialStageWidth/current_input_user_inch_width;
+let current_user_input_pixels_per_inch_height_scale = initialStageHeight/current_input_user_inch_height;
+
 if (wallpaperImageUrl) {
     console.log('Wallpaper Image URL:', wallpaperImageUrl);
-
-    const initialStageWidth = 900; // Initial stage width
-    const initialStageHeight = 720; // Initial stage height
 
     const stage = new Konva.Stage({
         container: 'canvas-container',
@@ -64,20 +110,40 @@ if (wallpaperImageUrl) {
     const layer = new Konva.Layer();
     stage.add(layer);
 
+    resizeStage(wrapper, stage, user_input_aspect_ratio);
+
     Konva.Image.fromURL(wallpaperImageUrl, function (image) {
         // Initial image setup
+
+        stage.scaleX(current_input_user_inch_width_scale);
+        stage.scaleY(current_input_user_inch_height_scale);
+
+        // Get the width and height of the element
         image.setAttrs({
-            x: stage.width() / 2,
-            y: stage.height() / 2,
-            offsetX: image.width() / 2,
-            offsetY: image.height() / 2,
+            x: (stage.width() - image.width()) / 2,
+            y: 0,
             draggable: true,
             scaleX: 1,
             scaleY: 1
         });
+        current_input_user_inch_height_scale = stage.height()/image.height();
+        current_input_user_inch_width_scale = current_input_user_inch_height_scale;
 
+        stage.scaleX(current_input_user_inch_width_scale);
+        stage.scaleY(current_input_user_inch_height_scale);
         layer.add(image);
         layer.draw();
+        const width = image.width();
+        const height = image.height();
+        console.log('Width:', width);
+        console.log('Height:', height);
+
+
+        // Get current scale
+        const scaleX = image.scaleX();
+        const scaleY = image.scaleY();
+        console.log('ScaleX:', scaleX);
+        console.log('ScaleY:', scaleY);
 
         // Add dragging constraints
         image.on('dragmove', function () {
@@ -100,6 +166,10 @@ if (wallpaperImageUrl) {
         function adjustCanvasSize() {
             const widthInput = parseFloat(widthInputElement.value) || 96;
             const heightInput = parseFloat(heightInputElement.value) || 72;
+            current_input_user_inch_width = widthInput;
+            current_input_user_inch_height = heightInput;
+            current_input_user_inch_width_scale = current_input_user_inch_width/image_original_width;
+            current_input_user_inch_height_scale = current_input_user_inch_height/image_original_height;
 
             // Validate input values
             if (widthInput < minWidth || widthInput > maxWidth || heightInput < minHeight || heightInput > maxHeight) {

@@ -50,7 +50,7 @@
 
   .content-left {
     flex: 7;
-    padding: 20px 0  20px 20px;
+    padding: 0px;
     border: 2px red solid;
   }
 
@@ -109,20 +109,15 @@ input[type="number"] {
 .walltool-canvas-wrapper {
     flex: 1;
     order: 2;
-    display: grid;
-    margin-bottom: 25px;
-    margin-right: 25px;
+    display: flex;
+    margin:0px;
     overflow: hidden;
+    height:90%;
+    width:100%;
     max-width: 100%;
     max-height: 100%;
     justify-content: center;
     align-content: center;
-    grid-gap: 0;
-    grid-template-columns: 50px minmax(auto, max-content);
-    grid-template-rows: 50px min-content;
-    grid-template-areas:
-        ". warea"
-        "harea canvas";
 }
 
 .walltool-canvas-width-container {
@@ -252,6 +247,7 @@ canvas:active {
     </div>
     <button id="toggle-rulers" class="toggle-rulers-button">Toggle Rulers</button>
     <div class="walltool-canvas-wrapper">
+        <!--
         <div class="walltool-canvas-width-container" style="place-self: end;">
             <div class="walltool-canvas-width">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="darkgrey" height="1rem" viewBox="0 0 320 512">
@@ -274,6 +270,7 @@ canvas:active {
             </div>
             <canvas id="vertical-ruler" class="walltool-canvas-ruler lower-canvas"></canvas>
         </div>
+        -->
         <div class="walltool-canvas-container">
             <div class="canvas-container">
                 <div id="canvas-container"></div>
