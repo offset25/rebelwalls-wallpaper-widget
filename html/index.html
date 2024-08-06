@@ -1,0 +1,347 @@
+
+<script src="konva-js.min.js"></script>
+<script src="custom.js"></script>
+<style>
+
+
+.substrate-options {
+    display: flex;
+    justify-content: space-between; /* Space between elements */
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 10px; /* Add margin if needed */
+    box-shadow: none; /* Remove any box shadow */
+    border: 2px #000 solid;
+    padding:0;
+    gap: 20px;
+}
+    .swatch-name  {
+        margin: 0;
+    }
+
+    .bold-name {
+        font-weight: bold;
+    }
+
+    .substrate-options:last-child {
+        margin-bottom: 0;
+    }
+
+    .tool-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .back-info {
+    display: flex;
+  }
+
+  .container {
+    display: flex;
+    gap: 20px;
+  }
+
+  .content-left {
+    flex: 7;
+    padding: 20px 0  20px 20px;
+    border: 2px red solid;
+  }
+
+  .content-right {
+    flex: 3;
+    padding: 20px 20px 20px 0;
+    border: 2px red solid;
+  }
+
+  .substrate-text {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+}
+ .icon-checkmark {
+    display: flex;
+    margin-left: auto;
+    align-items: flex-start;
+    padding: 1rem 1rem 0 0;
+ }
+
+ button.substrate-options {
+    -webkit-appearance: none; /* Remove default button styles for WebKit browsers */
+    -moz-appearance: none; /* Remove default button styles for Mozilla browsers */
+    appearance: none; /* Remove default button styles */
+}
+
+button.substrate-options:hover,
+button.substrate-options:active {
+    background-color: rgba(0, 0, 0, 0.05); /* Add hover/active styles if needed */
+}
+
+/* Remove background color on focus */
+input[type="number"]:focus {
+    background-color: transparent; /* or any desired color */
+    outline: none; /* Remove outline if necessary */
+}
+
+/* Remove background color for invalid or valid states */
+input[type="number"]:invalid,
+input[type="number"]:valid {
+    background-color: transparent; /* or any desired color */
+}
+
+/* Additional custom styles */
+input[type="number"] {
+    background-color: transparent; /* Ensure default background is transparent */
+    padding: 5px; /* Customize padding if needed */
+}
+
+.wallpaper-visualizer-container {
+    display: flex;
+    justify-content: center;
+}
+
+.walltool-canvas-wrapper {
+    flex: 1;
+    order: 2;
+    display: grid;
+    margin-bottom: 25px;
+    margin-right: 25px;
+    overflow: hidden;
+    max-width: 100%;
+    max-height: 100%;
+    justify-content: center;
+    align-content: center;
+    grid-gap: 0;
+    grid-template-columns: 50px minmax(auto, max-content);
+    grid-template-rows: 50px min-content;
+    grid-template-areas:
+        ". warea"
+        "harea canvas";
+}
+
+.walltool-canvas-width-container {
+    grid-area: warea;
+    width: 100%;
+    min-width: -moz-max-content;
+    min-width: max-content;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    align-self: end;
+    justify-self: center;
+}
+
+.walltool-canvas-width {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    font-size: 14px;
+}
+
+.walltool-canvas-height-container {
+    grid-area: harea;
+    place-self: center flex-start;
+    min-width: -moz-max-content;
+    min-width: max-content;
+    rotate: -90deg;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+canvas.lower-canvas {
+
+}
+
+.walltool-canvas-height {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    font-size: 14px;
+}
+
+.walltool-canvas-ruler {
+    width: 100%;
+    margin: 0 -25px;
+}
+
+.walltool-canvas-container {
+    grid-area: canvas;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+}
+
+canvas {
+    /* vertical-align: middle;
+    display: block;
+    overflow-clip-margin: content-box;
+    overflow: clip;
+    cursor: move; */
+    max-width: 100%;
+    max-height:100%;
+    display:block;
+    width: auto;
+    height:auto;
+}
+
+canvas:active {
+    cursor: move;
+}
+
+.canvas-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*
+    height:100vh;
+    width:100%;
+    */
+    height:720px;
+    width:900px;;
+    box-sizing: border-box;
+    transform: translateY(-50px);
+    max-width:100vw;
+    max-height:100vh;
+    overflow: auto;
+
+}
+
+.content-left {
+    height: 80vh; /* or any other fixed height */
+    overflow: hidden; /* Prevent resizing issues */
+}
+
+
+.hidden {
+    display: none;
+}
+
+.walltool-canvas-ruler {
+
+    display: block; /* Ensure the canvas is displayed as a block element */
+    background-color: white; /* Set background color to ensure clear drawing */
+}
+
+.walltool-canvas-container {
+    height: auto; /* Allow canvas container to resize */
+}
+
+#canvas-container{
+    border: 2px red solid;
+    /* height:100%; */
+    /* width:100%; */
+}
+
+</style>
+
+<div class="container">
+    <div class="content-left">
+    <div class="back-info">
+        <button class="tool-button" id="back-button">
+            {% render 'icon-picker', icon_name: 'check-back', width: '20', height: '20' %}
+        </button>
+        <div id="product-name"></div>
+    </div>
+    <button id="toggle-rulers" class="toggle-rulers-button">Toggle Rulers</button>
+    <div class="walltool-canvas-wrapper">
+        <div class="walltool-canvas-width-container" style="place-self: end;">
+            <div class="walltool-canvas-width">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="darkgrey" height="1rem" viewBox="0 0 320 512">
+                    <path d="M20.7 267.3c-6.2-6.2-6.2-16.4 0-22.6l192-192c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6L54.6 256 235.3 436.7c6.2 6.2 6.2 16.4 0 22.6s-16.4 6.2-22.6 0l-192-192z"></path>
+                </svg>
+                <span>Width Measurement</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="darkgrey" height="1rem" viewBox="0 0 320 512">
+                    <path d="M299.3 244.7c6.2 6.2 6.2 16.4 0 22.6l-192 192c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6L265.4 256 84.7 75.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0l192 192z"></path>
+                </svg>
+            </div>
+            <canvas id="horizontal-ruler" class="walltool-canvas-ruler lower-canvas" style="z-index: 1; height: 25px;"></canvas>
+
+
+
+
+        </div>
+        <div class="walltool-canvas-height-container" style="place-self: center start;">
+            <div class="walltool-canvas-height">
+                <span>Height Measurement</span>
+            </div>
+            <canvas id="vertical-ruler" class="walltool-canvas-ruler lower-canvas"></canvas>
+        </div>
+        <div class="walltool-canvas-container">
+            <div class="canvas-container">
+                <div id="canvas-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="content-right">
+        <div class="wallpaper-calculator">
+            <h2>Wallpaper Calculator</h2>
+            <div>
+                <label for="width">Width: inches</label>
+                <input type="number" id="width" name="width" min="96" max="1200" value="96">
+            </div>
+            <div>
+                <label for="height">Height: inches</label>
+                <input type="number" id="height" name="height" min="72" max="144" value="72">
+            </div>
+        </div>
+        <button class="substrate-options" id="eco-friendly">
+            <img src="{{ shop.metaobjects['substrates']['eco-friendly'].image |  image_url  }}" width="89" height="89">
+            <div class="substrate-text">
+                <p class="swatch-name bold-name">{{ shop.metaobjects['substrates']['eco-friendly'].name }}</p>
+                <p class="swatch-name">{{ shop.metaobjects['substrates']['eco-friendly'].description }}</p>
+                <p class="swatch-name swatch-price" data-price="{{ shop.metaobjects['substrates']['eco-friendly'].price }}">{{ shop.metaobjects['substrates']['eco-friendly'].price }}</p>
+            </div>
+            <div class="icon-checkmark">
+                <span class="icon-regular">{% render 'icon-picker', icon_name: 'check-regular', width: 20, height: 20 %}</span>
+                <span class="icon-solid" style="display: none;">{% render 'icon-picker', icon_name: 'check-solid', width: 20, height: 20 %}</span>
+            </div>
+        </button>
+        <button class="substrate-options" id="canvas">
+            <img src="{{ shop.metaobjects['substrates']['canvas'].image |  image_url  }}" width="89" height="89">
+            <div class="substrate-text">    
+                <p class="swatch-name bold-name">{{ shop.metaobjects['substrates']['canvas'].name }}</p>
+                <p class="swatch-name">{{ shop.metaobjects['substrates']['canvas'].description }}</p>
+                <p class="swatch-name swatch-price" data-price="{{ shop.metaobjects['substrates']['canvas'].price }}">{{ shop.metaobjects['substrates']['canvas'].price }}</p>
+            </div>
+            <div class="icon-checkmark">
+                <span class="icon-regular">{% render 'icon-picker', icon_name: 'check-regular', width: 20, height: 20 %}</span>
+                <span class="icon-solid" style="display: none;">{% render 'icon-picker', icon_name: 'check-solid', width: 20, height: 20 %}</span>
+            </div>
+        </button>
+        <button class="substrate-options" id="rattan">
+            <img src="{{ shop.metaobjects['substrates']['rattan'].image |  image_url  }}" width="89" height="89">
+            <div class="substrate-text"> 
+                <p class="swatch-name bold-name">{{ shop.metaobjects['substrates']['rattan'].name }}</p>
+                <p class="swatch-name">{{ shop.metaobjects['substrates']['rattan'].description }}</p>
+                <p class="swatch-name swatch-price" data-price="{{ shop.metaobjects['substrates']['rattan'].price }}">{{ shop.metaobjects['substrates']['rattan'].price }}</p>
+            </div>
+            <div class="icon-checkmark">
+                <span class="icon-regular">{% render 'icon-picker', icon_name: 'check-regular', width: 20, height: 20 %}</span>
+                <span class="icon-solid" style="display: none;">{% render 'icon-picker', icon_name: 'check-solid', width: 20, height: 20 %}</span>
+            </div>
+        </button>
+        <button class="substrate-options" id="linen">
+            <img src="{{ shop.metaobjects['substrates']['linen'].image |  image_url  }}" width="89" height="89">
+            <div class="substrate-text"> 
+                <p class="swatch-name bold-name"> {{ shop.metaobjects['substrates']['linen'].name }}</p>
+                <p class="swatch-name">{{ shop.metaobjects['substrates']['linen'].description }}</p>
+                <p class="swatch-name swatch-price" data-price="{{ shop.metaobjects['substrates']['rattan'].price }}">{{ shop.metaobjects['substrates']['linen'].price }}</p>
+            </div>
+            <div class="icon-checkmark">
+                <span class="icon-regular">{% render 'icon-picker', icon_name: 'check-regular', width: 20, height: 20 %}</span>
+                <span class="icon-solid" style="display: none;">{% render 'icon-picker', icon_name: 'check-solid', width: 20, height: 20 %}</span>
+            </div>
+        </button>
+        <p id="total-cost">Total Cost: $<span id="cost">0.00</span></p>
+    </div>
+  </div>
